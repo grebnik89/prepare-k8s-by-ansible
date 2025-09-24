@@ -1,0 +1,82 @@
+---
+- name: Update package cache
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Fix DNS configuration
+  lineinfile:
+    path: /etc/resolv.conf
+    regexp: '^nameserver '
+    line: 'nameserver 8.8.8.8'
+    state: present
+  notify: restart network
+
+- name: Disable swap immediately
+  command: swapoff -a
+  ignore_errors: yes
+
+- name: Disable swap permanently in fstab
+  lineinfile:
+    path: /etc/fstab
+    regexp: '^[^#].*swap'
+    line: '#\0'
+    backrefs: yes
+
+- name: Create directories for containerd
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  loop:
+    - /usr/local/bin
+    - /opt/cni/bin
+
+- name: Download containerd
+  get_url:
+    url: "https://github.com/containerd/containerd/releases/download/v{{ containerd_version }}/containerd-{{ containerd_version }}-linux-amd64.tar.gz"
+    dest: "/tmp/containerd-{{ containerd_version }}-linux-amd64.tar.gz"
+    mode: '0644'
+
+- name: Extract containerd
+  unarchive:
+    src: "/tmp/containerd-{{ containerd_version }}-linux-amd64.tar.gz"
+    dest: /usr/local
+    remote_src: yes
+    owner: root
+    group: root
+
+- name: Download runc
+  get_url:
+    url: "https://github.com/opencontainers/runc/releases/download/v{{ runc_version }}/runc.amd64"
+    dest: "/usr/local/sbin/runc"
+    mode: '0755'
+
+- name: Download CNI plugins
+  get_url:
+    url: "https://github.com/containernetworking/plugins/releases/download/v{{ cni_version }}/cni-plugins-linux-amd64-v{{ cni_version }}.tgz"
+    dest: "/tmp/cni-plugins.tgz"
+    mode: '0644'
+
+- name: Extract CNI plugins
+  unarchive:
+    src: "/tmp/cni-plugins.tgz"
+    dest: /opt/cni/bin
+    remote_src: yes
+    owner: root
+    group: root
+
+- name: Download containerd systemd service
+  get_url:
+    url: "https://raw.githubusercontent.com/containerd/containerd/main/containerd.service"
+    dest: "/etc/systemd/system/containerd.service"
+    mode: '0644'
+
+- name: Enable and start containerd service
+  systemd:
+    name: containerd
+    enabled: yes
+    state: started
+    daemon_reload: yes

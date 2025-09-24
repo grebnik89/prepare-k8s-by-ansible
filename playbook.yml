@@ -1,0 +1,30 @@
+---
+- name: Configure Kubernetes cluster nodes
+  hosts: k8s_cluster
+  become: yes
+  gather_facts: yes
+  
+  vars_files:
+    - group_vars/all.yml
+
+  roles:
+    - role: prepare_node
+
+  tasks:
+    - name: Verify containerd installation
+      command: containerd --version
+      register: containerd_version
+      changed_when: false
+
+    - name: Display containerd version
+      debug:
+        msg: "Containerd version: {{ containerd_version.stdout }}"
+
+    - name: Verify runc installation
+      command: runc --version
+      register: runc_version
+      changed_when: false
+
+    - name: Display runc version
+      debug:
+        msg: "Runc version: {{ runc_version.stdout }}"
