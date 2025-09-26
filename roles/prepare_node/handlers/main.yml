@@ -1,5 +1,10 @@
 ---
-- name: restart network
+- name: restart containerd
   systemd:
-    name: systemd-resolved
+    name: containerd
     state: restarted
+
+#- name: restart network
+#  systemd:
+#    name: systemd-resolved
+#    state: restarted
