@@ -1,28 +1,13 @@
 ---
+# tasks file for container_runtime
 - name: Fix DNS configuration
-  tags: fix_dns
+  tags: debug_dns
   lineinfile:
     path: /etc/resolv.conf
     regexp: '^nameserver '
     line: 'nameserver 8.8.8.8'
     state: present
-#  notify: restart network
-
-- name: Update package cache
-  apt:
-    update_cache: yes
-    cache_valid_time: 3600
-
-- name: Disable swap immediately
-  command: swapoff -a
-  ignore_errors: yes
-
-- name: Disable swap permanently in fstab
-  lineinfile:
-    path: /etc/fstab
-    regexp: '^[^#].*swap'
-    line: '#\0'
-    backrefs: yes
+  when: fix_dns | bool
 
 - name: Create directories for containerd
   file:
@@ -97,3 +82,21 @@
     group: root
     mode: '0644'
   notify: restart containerd
+
+- name: Verify containerd installation
+  command: containerd --version
+  register: containerd_version
+  changed_when: false
+
+- name: Display containerd version
+  debug:
+    msg: "Containerd version: {{ containerd_version.stdout }}"
+
+- name: Verify runc installation
+  command: runc --version
+  register: runc_version
+  changed_when: false
+
+- name: Display runc version
+  debug:
+    msg: "Runc version: {{ runc_version.stdout }}"

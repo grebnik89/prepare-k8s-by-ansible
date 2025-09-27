@@ -1,0 +1,12 @@
+---
+#tasks file for test
+- name: Test task in test role
+  file:
+    path: "/home/ansible/test"
+    state: touch
+    owner: root
+    group: root
+    mode: '0644'
+#  when: run_task | bool
+
+    

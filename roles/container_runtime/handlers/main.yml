@@ -1,0 +1,6 @@
+---
+# handlers file for container_runtime
+- name: restart containerd
+  systemd:
+    name: containerd
+    state: restarted

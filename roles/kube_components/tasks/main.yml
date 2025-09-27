@@ -1,0 +1,63 @@
+---
+# tasks file for kube_components
+- name: Fix DNS configuration
+  tags: debug_dns
+  lineinfile:
+    path: /etc/resolv.conf
+    regexp: '^nameserver '
+    line: 'nameserver 8.8.8.8'
+    state: present
+  when: fix_dns | bool
+    
+- name: Install packages needed to use Kubernetes apt repository
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gpg
+    state: present
+    update_cache: yes
+
+- name: Create directory for apt keyrings
+  file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+
+- name: Download and dearmor Kubernetes GPG key
+  shell: curl -fsSL "https://pkgs.k8s.io/core:/stable:/v{{ kubernetes_version }}/deb/Release.key" | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+  args:
+    creates: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+
+- name: Add Kubernetes apt repository
+  apt_repository:
+    repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v{{ kubernetes_version }}/deb/ /"
+    state: present
+    filename: kubernetes.list
+
+- name: Update apt cache after adding repo
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Install kubelet, kubeadm, and kubectl
+  apt:
+    name:
+      - kubelet
+      - kubeadm
+      - kubectl
+    state: present
+    allow_downgrade: no # Важно для избежания непреднамеренного понижения версии
+
+- name: Prevent automatic updates for Kubernetes packages
+  command: sudo apt-mark hold kubelet kubeadm kubectl
+  changed_when: false # Помечаем, что команда не меняет состояние системы
+
+- name: Enable and start kubelet service
+  systemd:
+    name: kubelet
+    enabled: yes
+    state: started
+    daemon_reload: yes
+

@@ -8,23 +8,7 @@
     - group_vars/all.yml
 
   roles:
-    - role: prepare_node
-
-  tasks:
-    - name: Verify containerd installation
-      command: containerd --version
-      register: containerd_version
-      changed_when: false
-
-    - name: Display containerd version
-      debug:
-        msg: "Containerd version: {{ containerd_version.stdout }}"
-
-    - name: Verify runc installation
-      command: runc --version
-      register: runc_version
-      changed_when: false
-
-    - name: Display runc version
-      debug:
-        msg: "Runc version: {{ runc_version.stdout }}"
+    - { role: swap_disable, tags: swap_disable }
+    - { role: container_runtime, tags: container_runtime }
+    - { role: kube_components, tags: kube_components }
+#    - { role: test_role, tags: test_role }

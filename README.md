@@ -7,6 +7,10 @@
 2. На каждой ноде создать пользователя ansible и настроить ssh подключение
 3. Проверить доступность с помощью ping
 
+ps: проверить работу DNS, в случае некорректного резолвинга - исправить. В моем случае, для KVM/libvirt нужно выполнить задачу с тэгом debug_fix и/или передать переменную "fix_dns=true"
+
 ### Что происходит после запуска playbook:
 
-1. Подготовка (roles/prepare_node), [README.md](roles/prepare_node/vars/main.yml)
+1. Отключение swap (roles/swap_disable)
+2. Container Runtime установка (roles/container_runtime), необходимо передать переменную "fix_dns=true"
+3. Kubeadm, kubectl, kubelet установка (roles/kube_components), необходимо передать переменную "fix_dns=true"
