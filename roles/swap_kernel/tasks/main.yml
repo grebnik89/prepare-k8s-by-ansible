@@ -1,0 +1,29 @@
+---
+# tasks file for swap_kernel
+- name: Disable swap immediately
+  command: swapoff -a
+  ignore_errors: yes
+
+- name: Disable swap permanently in fstab
+  lineinfile:
+    path: /etc/fstab
+    regexp: '^[^#].*swap'
+    line: '#\0'
+    backrefs: yes
+
+- name: Load br_netfilter module
+  modprobe:
+    name: br_netfilter
+    state: present
+
+- name: Enable kernel parameters for Kubernetes
+  sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    state: present
+    reload: yes
+    sysctl_set: yes
+  loop:
+    - { key: 'net.bridge.bridge-nf-call-iptables', value: '1' }
+    - { key: 'net.ipv4.ip_forward', value: '1' }
+  when: ansible_os_family == "Debian"
