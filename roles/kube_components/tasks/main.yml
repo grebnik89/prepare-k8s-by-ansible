@@ -7,7 +7,7 @@
     regexp: '^nameserver '
     line: 'nameserver 8.8.8.8'
     state: present
-  when: fix_dns | bool
+  when: fix_dns | bool # запуск только с переменной "fix_dns=True"
     
 - name: Install packages needed to use Kubernetes apt repository
   apt:

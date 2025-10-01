@@ -16,6 +16,12 @@
     name: br_netfilter
     state: present
 
+- name: Load br_netfilter module permanently in br_netfilter.conf
+  lineinfile:
+    path: "/etc/modules-load.d/br_netfilter.conf"
+    line: "br_netfilter"
+    create: yes
+
 - name: Enable kernel parameters for Kubernetes
   sysctl:
     name: "{{ item.key }}"
