@@ -1,13 +1,13 @@
 ---
 # tasks file for kube_components
-- name: Fix DNS configuration
-  tags: debug_dns
-  lineinfile:
-    path: /etc/resolv.conf
-    regexp: '^nameserver '
-    line: 'nameserver 8.8.8.8'
-    state: present
-  when: fix_dns | bool # запуск только с переменной "fix_dns=True"
+# - name: Fix DNS configuration
+#   tags: debug_dns
+#   lineinfile:
+#     path: /etc/resolv.conf
+#     regexp: '^nameserver '
+#     line: 'nameserver 8.8.8.8'
+#     state: present
+#   when: fix_dns | bool # запуск только с переменной "fix_dns=True"
     
 - name: Install packages needed to use Kubernetes apt repository
   apt:

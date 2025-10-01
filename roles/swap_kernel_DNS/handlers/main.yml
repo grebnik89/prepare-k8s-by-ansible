@@ -1,0 +1,6 @@
+---
+# handlers for swap_kernel_DNS
+- name: restart systemd-resolved
+  systemd:
+    name: systemd-resolved
+    state: restarted

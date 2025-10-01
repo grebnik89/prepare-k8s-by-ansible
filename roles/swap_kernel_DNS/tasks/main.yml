@@ -1,5 +1,5 @@
 ---
-# tasks file for swap_kernel
+# tasks file for swap_kernel_DNS
 - name: Disable swap immediately
   command: swapoff -a
   ignore_errors: yes
@@ -32,4 +32,14 @@
   loop:
     - { key: 'net.bridge.bridge-nf-call-iptables', value: '1' }
     - { key: 'net.ipv4.ip_forward', value: '1' }
+    - { key: 'net.ipv4.ip_nonlocal_bind', value: '1' }
   when: ansible_os_family == "Debian"
+
+- name: Fix DNS problem 
+  tags: debug_dns
+  lineinfile:
+    path: /etc/systemd/resolved.conf
+    regexp: '^DNSSEC=yes'
+    line: "DNSSEC=no"
+    state: present
+  notify: restart systemd-resolved
