@@ -11,4 +11,3 @@
     - { role: swap_kernel_DNS, tags: swap_kernel_DNS }
     - { role: container_runtime, tags: container_runtime }
     - { role: kube_components, tags: kube_components }
-#    - { role: test_role, tags: test_role }
